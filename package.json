@@ -1,0 +1,17 @@
+{
+  "name": "manta-reshard",
+  "version": "1.0.0",
+  "description": "Manta Resharding System",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joyent/manta-reshard.git"
+  },
+  "author": "Joyent, Inc.",
+  "license": "MPL-2.0",
+  "homepage": "https://github.com/joyent/manta-reshard#readme",
+  "dependencies": {
+    "bunyan": "^1.8.12",
+    "vasync": "^2.1.0",
+    "verror": "^1.10.0"
+  }
+}

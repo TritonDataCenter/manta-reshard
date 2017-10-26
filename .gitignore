@@ -1,2 +1,6 @@
 cache/
 make_stamps/
+node
+node_modules/
+proto/
+*-pkg-*.tar.bz2
