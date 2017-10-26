@@ -12,10 +12,20 @@
 # Makefile: Manta Resharding System
 #
 
+NAME :=				reshard
+
+NODE_PREBUILT_TAG =		gz
+NODE_PREBUILT_VERSION =		v4.8.5
+NODE_PREBUILT_IMAGE =		18b094b0-eb01-11e5-80c1-175dac7ddf02
+
+
 include ./tools/mk/Makefile.defs
+include ./tools/mk/Makefile.node_prebuilt.defs
 
 .PHONY: all
-all:
+all: $(STAMP_NODE_PREBUILT)
+	$(NODE) --version
 
 include ./tools/mk/Makefile.deps
 include ./tools/mk/Makefile.targ
+include ./tools/mk/Makefile.node_prebuilt.targ
