@@ -14,5 +14,7 @@
 # (Installed as "configure.sh" to be executed by the "user-script")
 #
 
+printf '==> everyboot @ %s\n' "$(date -u +%FT%TZ)"
+
 exit 0
 
