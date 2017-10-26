@@ -11,6 +11,7 @@
 
 #
 # Runs on every boot of a newly reprovisioned "reshard" zone.
+# (Installed as "configure.sh" to be executed by the "user-script")
 #
 
 exit 0

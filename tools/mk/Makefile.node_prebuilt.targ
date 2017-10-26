@@ -38,13 +38,11 @@ $(NODE_TARBALL):
 # Extract the Node toolchain.  This stamp includes the version number of the
 # Node toolchain, ensuring a new download and extraction if the version changes.
 #
-$(STAMP_NODE_PREBUILT): $(NODE_TARBALL) $(NODE_DEV_SYMLINK)
+$(STAMP_NODE_PREBUILT): $(NODE_TARBALL)
 	$(MAKE_STAMP_REMOVE)
 	rm -rf $(NODE_INSTALL)
 	mkdir $(NODE_INSTALL)
 	cd $(NODE_INSTALL) && tar xfz $(TOP)/$(NODE_TARBALL)
+	if [[ -n "$(NODE_DEV_SYMLINK)" ]]; then rm -f $(NODE_DEV_SYMLINK); \
+	    ln -s $(NODE_INSTALL)/node $(NODE_DEV_SYMLINK); fi
 	$(MAKE_STAMP_CREATE)
-
-$(NODE_DEV_SYMLINK):
-	rm -f $@
-	ln -s $(NODE_INSTALL)/node $(NODE_DEV_SYMLINK)

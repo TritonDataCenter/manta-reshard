@@ -30,9 +30,10 @@ RELEASE_TARBALL =		$(NAME)-pkg-$(STAMP).tar.bz2
 
 include ./tools/mk/Makefile.defs
 include ./tools/mk/Makefile.node_prebuilt.defs
+include ./tools/mk/Makefile.node_modules.defs
 
 .PHONY: all
-all: $(STAMP_NODE_PREBUILT)
+all: $(STAMP_NODE_PREBUILT) $(STAMP_NODE_MODULES)
 	$(NODE) --version
 
 #
@@ -53,11 +54,13 @@ NODE_BITS =			bin/node \
 				lib/libgcc_s.so.1 \
 				lib/libstdc++.so.6
 NODE_DIR =			$(PREFIX)/node
+NODE_MODULE_INSTALL =		$(PREFIX)/node_modules/.ok
 
 INSTALL_FILES =			$(addprefix $(PROTO), \
 				$(BOOT_SCRIPTS:%=$(BOOT_DIR)/%) \
 				$(SCRIPTS:%=$(SCRIPTS_DIR)/%) \
 				$(NODE_BITS:%=$(NODE_DIR)/%) \
+				$(NODE_MODULE_INSTALL) \
 				$(PREFIX)/cmd/server.js \
 				$(PREFIX)/bin/server \
 				$(PREFIX)/lib/wrap.sh \
@@ -109,12 +112,17 @@ $(PROTO)$(PREFIX)/bin/%:
 $(PROTO)$(PREFIX)/lib/%: lib/% | $(INSTALL_DIRS)
 	$(INSTALL_EXEC)
 
+$(PROTO)$(NODE_MODULE_INSTALL): $(STAMP_NODE_MODULES) | $(INSTALL_DIRS)
+	rm -rf $(@D)/
+	cp -rP node_modules/ $(@D)/
+	touch $@
+
 #
 # Mountain Gorilla targets:
 #
 
 .PHONY: release
-release: all install
+release: install
 	@echo "==> Building $(RELEASE_TARBALL)"
 	cd $(PROTO) && gtar -jcf $(TOP)/$(RELEASE_TARBALL) \
 	    --transform='s,^,root/,' \
@@ -134,3 +142,4 @@ publish: release
 include ./tools/mk/Makefile.deps
 include ./tools/mk/Makefile.targ
 include ./tools/mk/Makefile.node_prebuilt.targ
+include ./tools/mk/Makefile.node_modules.targ
