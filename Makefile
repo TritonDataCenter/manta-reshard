@@ -125,7 +125,7 @@ $(PROTO)$(NODE_MODULE_INSTALL): $(STAMP_NODE_MODULES) | $(INSTALL_DIRS)
 release: install
 	@echo "==> Building $(RELEASE_TARBALL)"
 	cd $(PROTO) && gtar -jcf $(TOP)/$(RELEASE_TARBALL) \
-	    --transform='s,^,root/,' \
+	    --transform='s,^[^.],root/&,' \
 	    --owner=0 --group=0 \
 	    opt
 
