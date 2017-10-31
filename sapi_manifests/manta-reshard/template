@@ -1,0 +1,22 @@
+{
+	"region": "{{{REGION}}}",
+	"datacenter": "{{{DATACENTER}}}",
+	"sapi_url": "{{{SAPI_URL}}}",
+	"ufds": {
+		"url": "{{{UFDS_URL}}}",
+		"bindDN": "{{{UFDS_ROOT_DN}}}",
+		"bindPassword": "{{{UFDS_ROOT_PW}}}"
+	},
+	"moray": {
+		"reshard": {
+			"options": {
+				"srvDomain": "{{{STORAGE_MORAY_SHARD}}}",
+				"cueballOptions": {
+					"resolvers": [
+						"nameservice.{{{DOMAIN_NAME}}}"
+					]
+				}
+			}
+		}
+	}
+}

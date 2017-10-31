@@ -40,6 +40,8 @@ all: $(STAMP_NODE_PREBUILT) $(STAMP_NODE_MODULES)
 # Install macros and targets:
 #
 
+COMMANDS =			server
+
 SCRIPTS =			firstboot.sh \
 				everyboot.sh \
 				backup.sh \
@@ -49,6 +51,9 @@ SCRIPTS_DIR =			$(PREFIX)/scripts
 
 BOOT_SCRIPTS =			setup.sh configure.sh
 BOOT_DIR =			/opt/smartdc/boot
+
+SAPI_MANIFESTS =		manta-reshard
+SAPI_MANIFEST_DIRS =		$(SAPI_MANIFESTS:%=$(PREFIX)/sapi_manifests/%)
 
 NODE_BITS =			bin/node \
 				lib/libgcc_s.so.1 \
@@ -61,9 +66,11 @@ INSTALL_FILES =			$(addprefix $(PROTO), \
 				$(SCRIPTS:%=$(SCRIPTS_DIR)/%) \
 				$(NODE_BITS:%=$(NODE_DIR)/%) \
 				$(NODE_MODULE_INSTALL) \
-				$(PREFIX)/cmd/server.js \
-				$(PREFIX)/bin/server \
+				$(COMMANDS:%=$(PREFIX)/cmd/%.js) \
+				$(COMMANDS:%=$(PREFIX)/bin/%) \
 				$(PREFIX)/lib/wrap.sh \
+				$(SAPI_MANIFEST_DIRS:%=%/template) \
+				$(SAPI_MANIFEST_DIRS:%=%/manifest.json) \
 				)
 
 INSTALL_DIRS =			$(addprefix $(PROTO), \
@@ -74,9 +81,11 @@ INSTALL_DIRS =			$(addprefix $(PROTO), \
 				$(PREFIX)/cmd \
 				$(PREFIX)/bin \
 				$(PREFIX)/lib \
+				$(SAPI_MANIFEST_DIRS) \
 				)
 
 INSTALL_EXEC =			rm -f $@ && cp $< $@ && chmod 755 $@
+INSTALL_FILE =			rm -f $@ && cp $< $@ && chmod 644 $@
 
 
 .PHONY: install
@@ -104,7 +113,7 @@ $(PROTO)$(PREFIX)/node/lib/%: $(STAMP_NODE_PREBUILT) | $(INSTALL_DIRS)
 	rm -f $@ && cp $(NODE_INSTALL)/node/lib/$(@F) $@ && chmod 755 $@
 
 $(PROTO)$(PREFIX)/cmd/%.js: cmd/%.js | $(INSTALL_DIRS)
-	$(INSTALL_EXEC)
+	$(INSTALL_FILE)
 
 $(PROTO)$(PREFIX)/bin/%:
 	rm -f $@ && ln -s ../lib/wrap.sh $@
@@ -116,6 +125,9 @@ $(PROTO)$(NODE_MODULE_INSTALL): $(STAMP_NODE_MODULES) | $(INSTALL_DIRS)
 	rm -rf $(@D)/
 	cp -rP node_modules/ $(@D)/
 	touch $@
+
+$(PROTO)$(PREFIX)/sapi_manifests/%: sapi_manifests/% | $(INSTALL_DIRS)
+	$(INSTALL_FILE)
 
 #
 # Mountain Gorilla targets:

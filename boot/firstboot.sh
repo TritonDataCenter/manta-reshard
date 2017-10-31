@@ -31,6 +31,8 @@ export PATH="$SVC_ROOT/bin:$SVC_ROOT/node/bin:/opt/local/bin:/usr/sbin:/bin"
 
 manta_common_presetup
 
+manta_add_manifest_dir "/opt/smartdc/$NAME"
+
 manta_common_setup "$NAME"
 
 manta_common_setup_end
