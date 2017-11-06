@@ -40,7 +40,9 @@ all: $(STAMP_NODE_PREBUILT) $(STAMP_NODE_MODULES)
 # Install macros and targets:
 #
 
-COMMANDS =			server
+COMMANDS =			$(subst .js,,$(notdir $(wildcard cmd/*.js)))
+
+LIB_FILES =			$(notdir $(wildcard lib/*.js))
 
 SCRIPTS =			firstboot.sh \
 				everyboot.sh \
@@ -68,6 +70,7 @@ INSTALL_FILES =			$(addprefix $(PROTO), \
 				$(NODE_MODULE_INSTALL) \
 				$(COMMANDS:%=$(PREFIX)/cmd/%.js) \
 				$(COMMANDS:%=$(PREFIX)/bin/%) \
+				$(LIB_FILES:%=$(PREFIX)/lib/%) \
 				$(PREFIX)/lib/wrap.sh \
 				$(SAPI_MANIFEST_DIRS:%=%/template) \
 				$(SAPI_MANIFEST_DIRS:%=%/manifest.json) \
@@ -118,8 +121,11 @@ $(PROTO)$(PREFIX)/cmd/%.js: cmd/%.js | $(INSTALL_DIRS)
 $(PROTO)$(PREFIX)/bin/%:
 	rm -f $@ && ln -s ../lib/wrap.sh $@
 
-$(PROTO)$(PREFIX)/lib/%: lib/% | $(INSTALL_DIRS)
+$(PROTO)$(PREFIX)/lib/%.sh: lib/%.sh | $(INSTALL_DIRS)
 	$(INSTALL_EXEC)
+
+$(PROTO)$(PREFIX)/lib/%.js: lib/%.js | $(INSTALL_DIRS)
+	$(INSTALL_FILE)
 
 $(PROTO)$(NODE_MODULE_INSTALL): $(STAMP_NODE_MODULES) | $(INSTALL_DIRS)
 	rm -rf $(@D)/

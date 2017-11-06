@@ -10,6 +10,9 @@ var mod_jsprim = require('jsprim');
 var mod_ufds = require('ufds');
 var mod_sdc = require('sdc-clients');
 
+var lib_data_access = require('../lib/data_access');
+var lib_http_server = require('../lib/http_server');
+
 
 var VE = mod_verror.VError;
 
@@ -329,6 +332,25 @@ load_remote_sdc_applications(ctx, done)
 	});
 }
 
+function
+connect_to_moray(ctx, done)
+{
+	lib_data_access.create_moray_client({
+		moray_config: ctx.ctx_cfg.moray.reshard.options,
+		log: ctx.ctx_log.child({ component: 'moray' }),
+	}, function (err, moray) {
+		if (err) {
+			done(err);
+			return;
+		}
+
+		ctx.ctx_moray = moray;
+
+		setImmediate(done);
+	});
+}
+
+
 
 (function
 main()
@@ -375,11 +397,24 @@ main()
 		 */
 		load_manta_application,
 		load_manta_objects,
-
 		find_sapi_urls,
-		create_remote_sapi_clients,
 
+		/*
+		 * We need a SAPI client for each remote DC to enable us to
+		 * look at configuration for that DC and to discover the
+		 * service names of various Triton APIs.  To make sure the SAPI
+		 * client works, we also load a copy of the "sdc" SAPI
+		 * application from each DC.
+		 */
+		create_remote_sapi_clients,
 		load_remote_sdc_applications,
+
+		/*
+		 * Our state is tracked in the administrative Moray shard.
+		 */
+		connect_to_moray,
+
+		lib_http_server.create_http_server,
 
 	] }, function (err) {
 		if (err) {
