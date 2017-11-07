@@ -12,6 +12,7 @@ var mod_sdc = require('sdc-clients');
 
 var lib_data_access = require('../lib/data_access');
 var lib_http_server = require('../lib/http_server');
+var lib_executor = require('../lib/executor');
 
 
 var VE = mod_verror.VError;
@@ -199,6 +200,7 @@ load_manta_application(ctx, done)
 			return;
 		}
 
+		ctx.ctx_app_refresh = Date.now();
 		ctx.ctx_app = app;
 
 		ctx.ctx_log.info('found manta application "%s"', app.uuid);
@@ -299,6 +301,26 @@ create_remote_sapi_clients(ctx, done)
 }
 
 function
+create_remote_cnapi_clients(ctx, done)
+{
+	mod_jsprim.forEachKey(ctx.ctx_dcs, function (n, dc) {
+		dc.dc_cnapi = dc.dc_app.metadata.cnapi_domain;
+
+		ctx.ctx_log.debug({ dc_cnapi_url: dc.dc_cnapi },
+		    'found CNAPI URL for DC "%s"', n);
+
+		dc.dc_clients.dcc_cnapi = new mod_sdc.CNAPI({
+			url: 'http://' + dc.dc_cnapi,
+			log: ctx.ctx_log.child({ component: 'cnapi/' +
+			    dc.dc_name }),
+			agent: false
+		});
+	});
+
+	setImmediate(done);
+}
+
+function
 load_remote_sdc_applications(ctx, done)
 {
 	mod_vasync.forEachPipeline({ inputs: Object.keys(ctx.ctx_dcs),
@@ -331,25 +353,6 @@ load_remote_sdc_applications(ctx, done)
 		setImmediate(done);
 	});
 }
-
-function
-connect_to_moray(ctx, done)
-{
-	lib_data_access.create_moray_client({
-		moray_config: ctx.ctx_cfg.moray.reshard.options,
-		log: ctx.ctx_log.child({ component: 'moray' }),
-	}, function (err, moray) {
-		if (err) {
-			done(err);
-			return;
-		}
-
-		ctx.ctx_moray = moray;
-
-		setImmediate(done);
-	});
-}
-
 
 
 (function
@@ -410,11 +413,19 @@ main()
 		load_remote_sdc_applications,
 
 		/*
+		 * Once we have loaded the "sdc" application from each remote
+		 * DC, we can create clients for other APIs (e.g., CNAPI).
+		 */
+		create_remote_cnapi_clients,
+
+		/*
 		 * Our state is tracked in the administrative Moray shard.
 		 */
-		connect_to_moray,
+		lib_data_access.create_moray_client,
 
 		lib_http_server.create_http_server,
+
+		lib_executor.create_executor,
 
 	] }, function (err) {
 		if (err) {
