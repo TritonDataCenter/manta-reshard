@@ -51,6 +51,9 @@ SCRIPTS =			firstboot.sh \
 				util.sh
 SCRIPTS_DIR =			$(PREFIX)/scripts
 
+TEMPLATES =			$(notdir $(wildcard templates/*))
+TEMPLATES_DIR =			$(PREFIX)/templates
+
 BOOT_SCRIPTS =			setup.sh configure.sh
 BOOT_DIR =			/opt/smartdc/boot
 
@@ -66,6 +69,7 @@ NODE_MODULE_INSTALL =		$(PREFIX)/node_modules/.ok
 INSTALL_FILES =			$(addprefix $(PROTO), \
 				$(BOOT_SCRIPTS:%=$(BOOT_DIR)/%) \
 				$(SCRIPTS:%=$(SCRIPTS_DIR)/%) \
+				$(TEMPLATES:%=$(TEMPLATES_DIR)/%) \
 				$(NODE_BITS:%=$(NODE_DIR)/%) \
 				$(NODE_MODULE_INSTALL) \
 				$(COMMANDS:%=$(PREFIX)/cmd/%.js) \
@@ -78,6 +82,7 @@ INSTALL_FILES =			$(addprefix $(PROTO), \
 
 INSTALL_DIRS =			$(addprefix $(PROTO), \
 				$(SCRIPTS_DIR) \
+				$(TEMPLATES_DIR) \
 				$(BOOT_DIR) \
 				$(NODE_DIR)/bin \
 				$(NODE_DIR)/lib \
@@ -108,6 +113,9 @@ $(PROTO)$(PREFIX)/scripts/%.sh: deps/manta-scripts/%.sh | $(INSTALL_DIRS)
 
 $(PROTO)$(PREFIX)/scripts/%.sh: boot/%.sh | $(INSTALL_DIRS)
 	$(INSTALL_EXEC)
+
+$(PROTO)$(PREFIX)/templates/%: templates/% | $(INSTALL_DIRS)
+	$(INSTALL_FILE)
 
 $(PROTO)$(PREFIX)/node/bin/%: $(STAMP_NODE_PREBUILT) | $(INSTALL_DIRS)
 	rm -f $@ && cp $(NODE_INSTALL)/node/bin/$(@F) $@ && chmod 755 $@

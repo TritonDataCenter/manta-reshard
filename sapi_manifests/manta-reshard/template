@@ -2,6 +2,7 @@
 	"region": "{{{REGION}}}",
 	"datacenter": "{{{DATACENTER}}}",
 	"sapi_url": "{{{SAPI_URL}}}",
+	"dns_domain": "{{{DNS_DOMAIN}}}",
 	"ufds": {
 		"url": "{{{UFDS_URL}}}",
 		"bindDN": "{{{UFDS_ROOT_DN}}}",

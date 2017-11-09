@@ -12,6 +12,7 @@
   "dependencies": {
     "assert-plus": "^1.0.0",
     "bunyan": "^1.8.12",
+    "extsprintf": "^1.3.0",
     "jsprim": "^2.0.0",
     "moray": "^3.3.0",
     "restify": "^6.2.3",
