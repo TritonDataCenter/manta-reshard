@@ -9,6 +9,7 @@ var mod_verror = require('verror');
 var mod_jsprim = require('jsprim');
 var mod_ufds = require('ufds');
 var mod_sdc = require('sdc-clients');
+var mod_urclient = require('urclient');
 
 var lib_data_access = require('../lib/data_access');
 var lib_http_server = require('../lib/http_server');
@@ -321,6 +322,54 @@ create_remote_cnapi_clients(ctx, done)
 }
 
 function
+create_remote_ur_clients(ctx, done)
+{
+	mod_vasync.forEachPipeline({ inputs: Object.keys(ctx.ctx_dcs),
+	    func: function (n, next) {
+		var dc = ctx.ctx_dcs[n];
+
+		if (dc.dc_clients.dcc_urclient) {
+			setImmediate(next);
+			return;
+		}
+
+		mod_assert.string(dc.dc_app.metadata.rabbitmq, 'rabbitmq');
+		var t = dc.dc_app.metadata.rabbitmq.split(':');
+		mod_assert.equal(t.length, 4, 'rabbitmq config malformed');
+
+		ctx.ctx_log.info('connecting to ur for DC "%s"', n);
+		var urc = mod_urclient.create_ur_client({
+			consumer_name: 'manta_reshard',
+			reconnect: true,
+			amqp_config: {
+				login: t[0],
+				password: t[1],
+				host: t[2],
+				port: Number(t[3])
+			},
+			log: ctx.ctx_log.child({ component: 'dc/' + n }),
+			connect_timeout: 30 * 1000,
+			enable_http: false,
+		});
+
+		urc.once('ready', function () {
+			ctx.ctx_log.info('ur connected for DC "%s"', n);
+			dc.dc_clients.dcc_urclient = urc;
+			next();
+		});
+
+	}}, function (err) {
+		if (err) {
+			ctx.ctx_log.warn(err, 'could not make ur clients');
+			retry(create_remote_ur_clients, ctx, done, 5);
+			return;
+		}
+
+		setImmediate(done);
+	});
+}
+
+function
 load_remote_sdc_applications(ctx, done)
 {
 	mod_vasync.forEachPipeline({ inputs: Object.keys(ctx.ctx_dcs),
@@ -417,6 +466,7 @@ main()
 		 * DC, we can create clients for other APIs (e.g., CNAPI).
 		 */
 		create_remote_cnapi_clients,
+		create_remote_ur_clients,
 
 		/*
 		 * Our state is tracked in the administrative Moray shard.
