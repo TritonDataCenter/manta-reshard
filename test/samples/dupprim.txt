@@ -1,0 +1,17 @@
+zookeeper:   10.20.0.6
+cluster:     2.moray.coal.coal.example.com
+generation:  1 (0/00000000)
+mode:        normal
+freeze:      frozen since 2017-11-20T19:45:14.200Z
+freeze info: reshard plan X
+
+ROLE     PEERNAME                             IP              
+primary  e2adddb2-22cf-4861-a120-478ea60f706d 10.20.0.8       
+primary  f2adddb2-22cf-4861-a120-478ea60f706d 10.20.0.8       
+sync     884697f8-d5e6-40ab-8023-86f96879db43 10.20.1.8       
+async    71f9bd05-9296-496b-b46a-7cc51ca008c6 10.20.2.8       
+
+ROLE     PEER     PG   REPL  SENT          FLUSH         REPLAY        LAG   
+primary  e2adddb2 ok   sync  0/14B09410    0/14B09410    0/14B09410    -     
+sync     884697f8 ok   async 0/14B09410    0/14B09410    0/14B09410    22m46s
+async    71f9bd05 ok   -     -             -             -             22m46s
