@@ -322,6 +322,26 @@ create_remote_cnapi_clients(ctx, done)
 }
 
 function
+create_remote_vmapi_clients(ctx, done)
+{
+	mod_jsprim.forEachKey(ctx.ctx_dcs, function (n, dc) {
+		dc.dc_vmapi = dc.dc_app.metadata.vmapi_domain;
+
+		ctx.ctx_log.debug({ dc_vmapi_url: dc.dc_vmapi },
+		    'found VMAPI URL for DC "%s"', n);
+
+		dc.dc_clients.dcc_vmapi = new mod_sdc.VMAPI({
+			url: 'http://' + dc.dc_vmapi,
+			log: ctx.ctx_log.child({ component: 'vmapi/' +
+			    dc.dc_name }),
+			agent: false
+		});
+	});
+
+	setImmediate(done);
+}
+
+function
 create_remote_ur_clients(ctx, done)
 {
 	mod_vasync.forEachPipeline({ inputs: Object.keys(ctx.ctx_dcs),
@@ -466,6 +486,7 @@ main()
 		 * DC, we can create clients for other APIs (e.g., CNAPI).
 		 */
 		create_remote_cnapi_clients,
+		create_remote_vmapi_clients,
 		create_remote_ur_clients,
 
 		/*
