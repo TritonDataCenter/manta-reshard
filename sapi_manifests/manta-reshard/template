@@ -1,4 +1,5 @@
 {
+	"manta_ip": "{{{auto.MANTA_IP}}}",
 	"region": "{{{REGION}}}",
 	"datacenter": "{{{DATACENTER}}}",
 	"sapi_url": "{{{SAPI_URL}}}",
