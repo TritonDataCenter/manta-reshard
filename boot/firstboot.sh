@@ -22,18 +22,54 @@ NAME=manta-reshard
 
 SVC_ROOT="/opt/smartdc/$NAME"
 
+#
+# Build PATH from this list of directories.  This PATH will be used both in the
+# execution of this script, as well as in the root user .bashrc file.
+#
+paths=(
+	"$SVC_ROOT/bin"
+	"$SVC_ROOT/node_modules/.bin"
+	"$SVC_ROOT/node/bin"
+	"/opt/local/bin"
+	"/opt/local/sbin"
+	"/usr/sbin"
+	"/usr/bin"
+	"/sbin"
+)
+
+PATH=
+for (( i = 0; i < ${#paths[@]}; i++ )); do
+	if (( i > 0 )); then
+		PATH+=':'
+	fi
+	PATH+="${paths[$i]}"
+done
+export PATH
+
 if ! source "$SVC_ROOT/scripts/util.sh" ||
     ! source "$SVC_ROOT/scripts/services.sh"; then
 	exit 1
 fi
-
-export PATH="$SVC_ROOT/bin:$SVC_ROOT/node/bin:/opt/local/bin:/usr/sbin:/bin"
 
 manta_common_presetup
 
 manta_add_manifest_dir "/opt/smartdc/$NAME"
 
 manta_common_setup "$NAME"
+
+#
+# Replace the contents of PATH from the default root user .bashrc with one
+# more appropriate for this particular zone.
+#
+if ! /usr/bin/ed -s '/root/.bashrc'; then
+	fatal 'could not modify .bashrc'
+fi <<EDSCRIPT
+/export PATH/d
+a
+export PATH="$PATH"
+.
+w
+EDSCRIPT
 
 manta_common_setup_end
 
