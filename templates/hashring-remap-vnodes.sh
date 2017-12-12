@@ -13,6 +13,7 @@ export PATH='/usr/bin:/usr/sbin:/sbin'
 
 workspace='/var/tmp/reshard.%%WORKSPACE_ID%%'
 shard='tcp://%%SHARD%%:2020'
+new_shard='tcp://%%NEW_SHARD%%:2020'
 
 if [[ ! -d "$workspace/hash_ring" ]]; then
 	printf 'ERROR: no hash ring in workspace directory: %s\n' \
@@ -31,31 +32,44 @@ st_processed_vnodes=null
 st_start_time=$(date -u '+%FT%TZ')
 st_finished=false
 st_error=false
+st_zonename=$(zonename)
 
-function write_status {
-	local status_time=$(date -u '+%FT%TZ')
+function post_status {
+	local retrycount=
 
-	cat >"$workspace/.status.$st_pid" <<-EOF
-	{
-		"pid": $st_pid,
-		"start_time": "$st_start_time",
-		"total_vnodes": $st_total_vnodes,
-		"processed_vnodes": $st_processed_vnodes,
-		"status_time": "$status_time",
-		"message": "$1",
-		"finished": $st_finished,
-		"error": $st_error
-	}
-	EOF
+	for (( retrycount = 0; retrycount < 25; retrycount++ )); do
+		if curl --max-time 30 -sSf -X POST \
+		    -H 'Content-Type: application/json' -d '@-' \
+		    "%%STATUS_URL%%"; then
+			return 0
+		fi <<-EOF
+		{
+			"pid": $st_pid,
+			"start_time": "$st_start_time",
+			"total_vnodes": $st_total_vnodes,
+			"processed_vnodes": $st_processed_vnodes,
+			"message": "$1",
+			"finished": $st_finished,
+			"error": $st_error,
+			"zonename": "$st_zonename",
+			"workspace": "$workspace"
+		}
+		EOF
 
-	mv "$workspace/.status.$st_pid" "$workspace/status.json"
+		printf 'WARNING: status POST failed (retry %d)\n' \
+		    "$retrycount" >&2
+		sleep 5
+	done
+
+	printf 'FATAL: could not POST status to reshard server\n' >&2
+	exit 1
 }
 
 function fatal {
 	printf 'ERROR: %s\n' "$1" >&2
 
 	st_error=true
-	write_status "ERROR: $1"
+	post_status "ERROR: $1"
 
 	exit 1
 }
@@ -73,7 +87,7 @@ FASHARGS=(
 #
 # Load the full list of vnodes currently mapped to the target shard (pnode).
 #
-write_status 'loading vnode list'
+post_status 'loading vnode list'
 if ! vnodes_out=$("$NODE" "$FASH" get-vnodes "${FASHARGS[@]}" "$shard") ||
     [[ -z $vnodes_out ]]; then
 	fatal 'could not load vnode list'
@@ -87,7 +101,7 @@ fi
 # regular JSON tools.  We will hold our collective noses, and pull it apart
 # with "awk".
 #
-write_status 'processing vnode list'
+post_status 'processing vnode list'
 if ! vnodes=( $(awk '{ gsub("[^0-9]", "", $0); printf("%d\n", $0); }' \
     <<< "$vnodes_out") ); then
 	fatal 'could not post-process vnode list'
@@ -95,7 +109,7 @@ fi
 
 st_total_vnodes=${#vnodes[@]}
 st_processed_vnodes=0
-write_status 'marking vnodes read-only'
+post_status 'remapping vnodes'
 
 while :; do
 	if (( st_processed_vnodes >= ${#vnodes[@]} )); then
@@ -103,27 +117,35 @@ while :; do
 	fi
 
 	#
-	# Batch the linefeed delimited list of entries into 2000 entry
+	# Batch the linefeed delimited list of entries into 1000 entry
 	# comma-separated chunks.  By marking multiple vnodes in a single
 	# "fash" invocation, we can greatly improve the performance of the
 	# entire operation.
 	#
 	batch=
-	for (( nbatch = 0; nbatch < 2000 && st_processed_vnodes < ${#vnodes[@]};
+	for (( nbatch = 0; nbatch < 1000 && st_processed_vnodes < ${#vnodes[@]};
 	    nbatch++ )); do
+		vi=$(( st_processed_vnodes++ ))
+		if (( vi % 2 != 0 )); then
+			#
+			# As we are splitting this shard in half, skip every
+			# second vnode.
+			#
+			continue
+		fi
 		if (( nbatch > 0 )); then
 			batch+=','
 		fi
-		batch+=${vnodes[$(( st_processed_vnodes++ ))]}
+		batch+=${vnodes[$vi]}
 	done
 
-	if ! "$NODE" "$FASH" add-data "${FASHARGS[@]}" -v "$batch" -d 'ro' \
-	    >/dev/null; then
-		fatal 'could not mark vnodes read-only'
+	if ! "$NODE" "$FASH" remap-vnode "${FASHARGS[@]}" -v "$batch" \
+	    -p "$new_shard" >/dev/null; then
+		fatal 'could not remap vnodes'
 	fi
 
-	write_status 'marking vnodes read-only'
+	post_status 'remapping vnodes'
 done
 
 st_finished=true
-write_status 'operation complete'
+post_status 'remap complete'

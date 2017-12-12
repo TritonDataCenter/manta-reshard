@@ -146,6 +146,18 @@ create_sapi_client(ctx, done)
 }
 
 function
+create_hash_ring_imgapi_client(ctx, done)
+{
+	ctx.ctx_hashring_imgapi = new mod_sdc.IMGAPI({
+		url: ctx.ctx_app.metadata.HASH_RING_IMGAPI_SERVICE,
+		log: ctx.ctx_log.child({ component: 'imgapi' }),
+		agent: false
+	});
+
+	setImmediate(done);
+}
+
+function
 find_datacentres(ctx, done)
 {
 	ctx.ctx_ufds.listDatacenters(ctx.ctx_cfg.region, function (err, dcs) {
@@ -470,6 +482,13 @@ main()
 		load_manta_application,
 		load_manta_objects,
 		find_sapi_urls,
+
+		/*
+		 * Manta stores the Electric Moray hash ring image in a
+		 * particular IMGAPI service, as designated in the SAPI
+		 * application.
+		 */
+		create_hash_ring_imgapi_client,
 
 		/*
 		 * We need a SAPI client for each remote DC to enable us to

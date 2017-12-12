@@ -15,22 +15,65 @@ if ! cd "$workspace"; then
 fi
 
 #
-# Create tar archive of hash ring database.
+# Create tar archive of hash ring database.  Note that the "hash_ring"
+# directory must appear in the root of the archive, and contain the LevelDB
+# files with no other intervening directories.
 #
-if ! tar Ecfz 'new_hash_ring.tar.gz' 'hash_ring'; then
+file='new_hash_ring.tar.gz'
+if ! tar Ecfz "$file" 'hash_ring'; then
 	printf 'ERROR: could not create tar file\n' >&2
 	exit 1
 fi
 
 #
-# Upload the hash ring database to the resharding server.
+# Generate an image manifest that describes the hash ring database.
 #
-if ! curl -sSf -T 'new_hash_ring.tar.gz' '%%PUT_FILE_URL%%' >/dev/null; then
-	printf 'ERROR: could not store hash ring to reshard server\n' >&2
+if ! file_sha1=$(digest -a sha1 "$file") || ! file_size=$(wc -c "$file"); then
+	printf 'ERROR: could not get size or checksum of file\n' >&2
+	exit 1
+fi
+if ! iso_date=$(date -uR +%FT%TZ) || ! image_uuid=$(uuid -v4); then
+	printf 'ERROR: could not generate date stamp or image UUID\n' >&2
+	exit 1
+fi
+manifest='manifest.json'
+if ! cat >"$manifest"; then
+	printf 'ERROR: could not write manifest JSON file\n' >&2
+	exit 1
+fi <<MANIFEST
+{
+	"v": 2,
+	"uuid": "$image_uuid",
+	"owner": "%%POSEIDON_UUID%%",
+	"name": "manta-hash-ring",
+	"version": "$iso_date",
+	"state": "active",
+	"public": false,
+	"published_at": "$iso_date",
+	"type": "other",
+	"os": "other",
+	"files": [
+		{
+			"sha1": "$file_sha1",
+			"size": "$file_size",
+			"compression": "gzip"
+		}
+	],
+	"description": "Manta Hash Ring",
+	"tags": {
+		"manta_reshard_plan": "%%PLAN_UUID%%",
+		"manta_reshard_transition": "%%TRANSITION%%"
+	}
+}
+MANIFEST
+
+#
+# Upload the hash ring database to IMGAPI.
+#
+if ! "$NODE" "$SDC_IMGADM" import -q -m "$manifest" -s "$file_sha1" \
+    -f "$file" >&2; then
+	printf 'ERROR: could not upload image to IMGAPI.\n' >&2
 	exit 1
 fi
 
-#
-# Emit the MD5 sum for the uploaded file.
-#
-digest -a md5 'new_hash_ring.tar.gz'
+printf '%s\n' "$image_uuid"
