@@ -46,7 +46,7 @@ fi <<MANIFEST
 	"uuid": "$image_uuid",
 	"owner": "%%POSEIDON_UUID%%",
 	"name": "manta-hash-ring",
-	"version": "$iso_date",
+	"version": "${iso_date//[:-]/}",
 	"state": "active",
 	"public": false,
 	"published_at": "$iso_date",
