@@ -15,6 +15,26 @@ if ! cd "$workspace"; then
 fi
 
 #
+# Generate the date stamp and intended image UUID for this hash ring file.
+# We want to include a stamp inside the archive itself, so that we can
+# identify an extracted copy in the future.
+#
+if ! iso_date=$(date -u +%FT%TZ) || ! image_uuid=$(uuid -v4); then
+	printf 'ERROR: could not generate date stamp or image UUID\n' >&2
+	exit 1
+fi
+if ! cat >'hash_ring/manta_hash_ring_stamp.json'; then
+	printf 'ERROR: could not generate Manta hash ring stamp file\n' >&2
+	exit 1
+fi <<STAMP
+{
+	"image_uuid": "$image_uuid",
+	"date": "$iso_date",
+	"source_zone": "$(zonename)"
+}
+STAMP
+
+#
 # Create tar archive of hash ring database.  Note that the "hash_ring"
 # directory must appear in the root of the archive, and contain the LevelDB
 # files with no other intervening directories.
@@ -30,10 +50,6 @@ fi
 #
 if ! file_sha1=$(digest -a sha1 "$file") || ! file_size=$(wc -c "$file"); then
 	printf 'ERROR: could not get size or checksum of file\n' >&2
-	exit 1
-fi
-if ! iso_date=$(date -uR +%FT%TZ) || ! image_uuid=$(uuid -v4); then
-	printf 'ERROR: could not generate date stamp or image UUID\n' >&2
 	exit 1
 fi
 manifest='manifest.json'
