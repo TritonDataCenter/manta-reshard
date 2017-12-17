@@ -11,7 +11,7 @@ var VE = mod_verror.VError;
 
 var opts = {};
 
-process.argv.slice(2).forEach(function (arg) {
+process.argv.slice(3).forEach(function (arg) {
 	var t = arg.split('=');
 
 	if (t.length !== 2) {
@@ -23,8 +23,7 @@ process.argv.slice(2).forEach(function (arg) {
 });
 
 
-lib_template.template_load('electric-moray-update-ring.sh',
-    function (err, t) {
+lib_template.template_load(process.argv[2], function (err, t) {
 	if (err) {
 		console.error('ERROR: %s', VE.fullStack(err));
 		process.exit(1);
