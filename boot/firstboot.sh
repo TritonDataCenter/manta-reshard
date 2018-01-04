@@ -55,7 +55,7 @@ manta_common_presetup
 
 manta_add_manifest_dir "/opt/smartdc/$NAME"
 
-manta_common_setup "$NAME"
+manta_common_setup 'reshard'
 
 #
 # Replace the contents of PATH from the default root user .bashrc with one
@@ -71,5 +71,12 @@ export PATH="$PATH"
 w
 EDSCRIPT
 
-manta_common_setup_end
+#
+# Import the reshard SMF service.  The manifest file creates the service
+# enabled by default.
+#
+if ! svccfg import "/opt/smartdc/$NAME/smf/manifests/reshard.xml"; then
+	fatal 'could not import SMF service'
+fi
 
+manta_common_setup_end

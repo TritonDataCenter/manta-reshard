@@ -60,6 +60,9 @@ BOOT_DIR =			/opt/smartdc/boot
 SAPI_MANIFESTS =		manta-reshard
 SAPI_MANIFEST_DIRS =		$(SAPI_MANIFESTS:%=$(PREFIX)/sapi_manifests/%)
 
+SMF_MANIFESTS =			reshard
+SMF_MANIFESTS_DIR =		$(PREFIX)/smf/manifests
+
 NODE_BITS =			bin/node \
 				lib/libgcc_s.so.1 \
 				lib/libstdc++.so.6
@@ -70,6 +73,7 @@ INSTALL_FILES =			$(addprefix $(PROTO), \
 				$(BOOT_SCRIPTS:%=$(BOOT_DIR)/%) \
 				$(SCRIPTS:%=$(SCRIPTS_DIR)/%) \
 				$(TEMPLATES:%=$(TEMPLATES_DIR)/%) \
+				$(SMF_MANIFESTS:%=$(SMF_MANIFESTS_DIR)/%.xml) \
 				$(NODE_BITS:%=$(NODE_DIR)/%) \
 				$(NODE_MODULE_INSTALL) \
 				$(COMMANDS:%=$(PREFIX)/cmd/%.js) \
@@ -83,6 +87,7 @@ INSTALL_FILES =			$(addprefix $(PROTO), \
 INSTALL_DIRS =			$(addprefix $(PROTO), \
 				$(SCRIPTS_DIR) \
 				$(TEMPLATES_DIR) \
+				$(SMF_MANIFESTS_DIR) \
 				$(BOOT_DIR) \
 				$(NODE_DIR)/bin \
 				$(NODE_DIR)/lib \
@@ -141,6 +146,9 @@ $(PROTO)$(NODE_MODULE_INSTALL): $(STAMP_NODE_MODULES) | $(INSTALL_DIRS)
 	touch $@
 
 $(PROTO)$(PREFIX)/sapi_manifests/%: sapi_manifests/% | $(INSTALL_DIRS)
+	$(INSTALL_FILE)
+
+$(PROTO)$(PREFIX)/smf/manifests/%.xml: smf/manifests/%.xml | $(INSTALL_DIRS)
 	$(INSTALL_FILE)
 
 #
