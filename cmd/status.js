@@ -113,23 +113,8 @@ fetch_status('127.0.0.1', 80, function (err, res) {
 
 	for (var i = 0; i < k.length; i++) {
 		var p = res.plans[k[i]];
-		var r = p.running ? ' (running)' :
-		    p.held ? ' (held)' :
-		    p.retrying ? ' (retrying)' :
-		    '';
 
-		console.log('PLAN: %s%s', p.uuid, r);
-		console.log('STATUS:');
 		lib_status.pretty_print(p.status);
-
-		if (p.held || p.retrying) {
-			console.log('');
-			console.log('ERROR: %s', p.error.message);
-
-			mod_jsprim.forEachKey(p.error.info, function (k, v) {
-				console.log('\t%s: %s', k, v);
-			});
-		}
 
 		console.log('');
 	}
