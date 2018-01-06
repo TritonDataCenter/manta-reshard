@@ -87,6 +87,7 @@ INSTALL_FILES =			$(addprefix $(PROTO), \
 				$(PREFIX)/lib/wrap.sh \
 				$(SAPI_MANIFEST_DIRS:%=%/template) \
 				$(SAPI_MANIFEST_DIRS:%=%/manifest.json) \
+				$(PREFIX)/bin/reshard \
 				)
 
 INSTALL_DIRS =			$(addprefix $(PROTO), \
@@ -138,6 +139,9 @@ $(PROTO)$(PREFIX)/cmd/%.js: cmd/%.js | $(INSTALL_DIRS)
 
 $(PROTO)$(PREFIX)/bin/%:
 	rm -f $@ && ln -s ../lib/wrap.sh $@
+
+$(PROTO)$(PREFIX)/bin/reshard: scripts/reshard.sh
+	$(INSTALL_EXEC)
 
 $(PROTO)$(PREFIX)/lib/%.sh: lib/%.sh | $(INSTALL_DIRS)
 	$(INSTALL_EXEC)

@@ -1,16 +1,8 @@
 
 
-var mod_net = require('net');
-var mod_http = require('http');
-
-var mod_assert = require('assert-plus');
 var mod_verror = require('verror');
-var mod_vasync = require('vasync');
-var mod_jsprim = require('jsprim');
-var mod_extsprintf = require('extsprintf');
 
 var lib_common = require('../lib/common');
-var lib_status = require('../lib/status');
 var lib_http_client = require('../lib/http_client');
 
 var VE = mod_verror.VError;
