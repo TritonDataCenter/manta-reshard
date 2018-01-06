@@ -104,6 +104,14 @@ fetch_status('127.0.0.1', 80, function (err, res) {
 		process.exit(1);
 	}
 
+	if (res.problems.length > 0) {
+		console.log('PROBLEMS:');
+		res.problems.forEach(function (problem) {
+			console.log('  » %s', problem);
+		});
+		console.log('');
+	}
+
 	if (!res.plans) {
 		console.error('RESULT DID NOT INCLUDE "plans"');
 		process.exit(1);
