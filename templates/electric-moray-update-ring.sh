@@ -1,10 +1,4 @@
 #!/bin/bash
-#
-# This script will download a pristine copy of the current hash ring database
-# from IMGAPI and unpack it in a workspace directory specific to the current
-# reshard plan.  Once unpacked, other scripts can be run to perform specific
-# modifications to the database.
-#
 
 NODE='/opt/smartdc/electric-moray/build/node/bin/node'
 EM_BIN='/opt/smartdc/electric-moray/node_modules/.bin'

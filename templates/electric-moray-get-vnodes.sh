@@ -49,7 +49,7 @@ fi
 # Unpack the image.  The tar file contains the directory "hash_ring".
 #
 if ! tar xfz 'hash_ring.tar.gz'; then
-	fatal 'ERROR: could not extract tar file'
+	fatal 'could not extract tar file'
 fi
 
 FASHARGS=(
@@ -58,16 +58,43 @@ FASHARGS=(
 )
 
 #
-# Extract the list of vnodes from the old and new shards.
+# Extract the list of pnodes from the hash ring database.
 #
-if ! shard_vnodes=$("$NODE" "$FASH" get-vnodes "${FASHARGS[@]}" \
-    'tcp://%%SHARD%%:2020') || [[ -z $shard_vnodes ]]; then
-	fatal 'could not list vnodes for %%SHARD%%'
+if ! pnodes_res=$("$NODE" "$FASH" get-pnodes "${FASHARGS[@]}"); then
+	fatal 'could not list pnodes'
 fi
-if ! new_shard_vnodes=$("$NODE" "$FASH" get-vnodes "${FASHARGS[@]}" \
-    'tcp://%%NEW_SHARD%%:2020') || [[ -z $new_shard_vnodes ]]; then
-	fatal 'could not list vnodes for %%NEW_SHARD%%'
+if ! pnodes_list=( $(/usr/bin/awk "{ sub(\"^[^']*'\", \"\", \$0);
+    sub(\"[ ,'\\\\]]*\$\", \"\", \$0); printf(\"%s\n\", \$0); }" \
+    <<< "$pnodes_res") ); then
+	fatal 'could not parse pnodes list'
 fi
+
+#
+# Extract the list of vnodes from the old and new shards.  Build the
+# JSON-formatted POST body as we go.
+#
+post_body='{'
+for (( i = 0; i < ${#pnodes_list[@]}; i++ )); do
+	pnode=${pnodes_list[$i]}
+
+	#
+	# Remove the protocol and port number from the URL string in order
+	# to get the bare shard name.
+	#
+	shard_name=${pnode#tcp://}
+	shard_name=${shard_name%:2020}
+
+	if ! shard_vnodes=$("$NODE" "$FASH" get-vnodes "${FASHARGS[@]}" \
+	    "$pnode") || [[ -z $shard_vnodes ]]; then
+		fatal "could not list vnodes for \"$shard_name\""
+	fi
+
+	post_body+="\"$shard_name\":$shard_vnodes"
+	if (( i < ${#pnodes_list[@]} - 1 )); then
+		post_body+=','
+	fi
+done
+post_body+='}'
 
 #
 # POST the data back to the reshard server.
@@ -76,15 +103,10 @@ ok=false
 for (( retrycount = 0; retrycount < 5; retrycount++ )); do
 	if curl --max-time 45 -sSf -X POST \
 	    -H 'Content-Type: application/json' -d '@-' \
-	    '%%POST_URL%%'; then
+	    '%%POST_URL%%' <<< "$post_body"; then
 		ok=true
 		break
-	fi <<-EOF
-	{
-		"%%SHARD%%": $shard_vnodes,
-		"%%NEW_SHARD%%": $new_shard_vnodes
-	}
-	EOF
+	fi
 done
 
 if [[ $ok != true ]]; then
