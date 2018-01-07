@@ -11,6 +11,7 @@ var mod_ufds = require('ufds');
 var mod_sdc = require('sdc-clients');
 var mod_urclient = require('urclient');
 
+var lib_triton_access = require('../lib/triton_access');
 var lib_data_access = require('../lib/data_access');
 var lib_http_server = require('../lib/http_server');
 var lib_executor = require('../lib/executor');
@@ -25,45 +26,6 @@ retry(func, ctx, done, nsecs)
 		func(ctx, done);
 	}, nsecs * 1000);
 }
-
-function
-get_sapi_application(log, sapi, name, include_master, callback)
-{
-	mod_assert.object(log, 'log');
-	mod_assert.object(sapi, 'sapi');
-	mod_assert.string(name, 'name');
-	mod_assert.bool(include_master, 'include_master');
-	mod_assert.func(callback, 'callback');
-
-	var opts = {
-		name: name
-	};
-
-	if (include_master) {
-		/*
-		 * Note that SAPI merely checks for the _presence_ of
-		 * "include_master" in the query string.  Passing any value,
-		 * even "false", results in the inclusion of master results.
-		 */
-		opts.include_master = true;
-	}
-
-	sapi.listApplications(opts, function (err, apps) {
-		if (err) {
-			callback(new VE(err, 'locate "%s" application', name));
-			return;
-		}
-
-		if (apps.length !== 1) {
-			callback(new VE('found %d "%s" applications, wanted 1',
-			    apps.length, name));
-			return;
-		}
-
-		callback(null, apps[0]);
-	});
-}
-
 
 function
 load_config(ctx, done)
@@ -204,8 +166,8 @@ find_datacentres(ctx, done)
 function
 load_manta_application(ctx, done)
 {
-	get_sapi_application(ctx.ctx_log, ctx.ctx_sapi, 'manta', true,
-	    function (err, app) {
+	lib_triton_access.get_sapi_application(ctx.ctx_log, ctx.ctx_sapi,
+	    'manta', true, function (err, app) {
 		if (err) {
 			ctx.ctx_log.warn(err, 'could not locate ' +
 			    '"manta" SAPI application (retrying)');
@@ -408,8 +370,8 @@ load_remote_sdc_applications(ctx, done)
 	    func: function (n, next) {
 		var dc = ctx.ctx_dcs[n];
 
-		get_sapi_application(ctx.ctx_log, dc.dc_clients.dcc_sapi,
-		    'sdc', false, function (err, app) {
+		lib_triton_access.get_sapi_application(ctx.ctx_log,
+		    dc.dc_clients.dcc_sapi, 'sdc', false, function (err, app) {
 			if (err) {
 				next(new VE(err, 'remote DC "%s"', n));
 				return;
