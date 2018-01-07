@@ -111,6 +111,10 @@ st_total_vnodes=${#vnodes[@]}
 st_processed_vnodes=0
 post_status 'remapping vnodes'
 
+if (( st_total_vnodes < 2 )); then
+	fatal 'less than 2 vnodes found'
+fi
+
 while :; do
 	if (( st_processed_vnodes >= ${#vnodes[@]} )); then
 		break
