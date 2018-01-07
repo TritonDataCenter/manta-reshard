@@ -22,23 +22,26 @@ get_status()
 		c.prop('xxx', 'zzzzz ' + i);
 		c.prop('yyy', 'asiodfjasid ' + i);
 
-		var nc = Math.round(Math.random() * 1);
+		var nc = i;
 
 		for (var j = 0; j < nc; j++) {
 			var cc = c.child();
 
-			cc.update('second level child task %d', j);
+			cc.update('second level child task %d ' +
+			    'asdjifjasidfj aisdjf iasdjf iasjdf iajsdfij', j);
 			cc.prop('super wide property',
 			    'this is so very, very wide -- really _quite_ ' +
 			    'wide, all up!');
 			cc.prop('and', 'another');
 
-			var ncc = Math.round(Math.random() * 3);
+			var ncc = i - 1;
 
 			for (var k = 0; k < ncc; k++) {
 				var ccc = cc.child();
 
-				ccc.update('third level task %d', k);
+				ccc.update('third level task %d ' +
+				    'xxx xxxxx xxxx xxxx xxxx xxxx xxxx ' +
+				    'xxx xxxxx xxxx xxxx xxxx xxxx xxxx ', k);
 				ccc.prop('final', 'hah!');
 			}
 		}
