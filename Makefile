@@ -63,14 +63,9 @@ SAPI_MANIFEST_DIRS =		$(SAPI_MANIFESTS:%=$(PREFIX)/sapi_manifests/%)
 SMF_MANIFESTS =			reshard
 SMF_MANIFESTS_DIR =		$(PREFIX)/smf/manifests
 
-#
-# Include the "node" binary, as well as any shared libraries that are included
-# in the "lib/" directory of the unpacked Node distribution.  Leave out anything
-# not required at runtime; e.g., NPM.
-#
 NODE_BITS =			bin/node \
-				$(addprefix lib/,$(notdir $(wildcard \
-				    $(NODE_INSTALL)/node/lib/*.so.*)))
+				lib/libgcc_s.so.1 \
+				lib/libstdc++.so.6
 NODE_DIR =			$(PREFIX)/node
 NODE_MODULE_INSTALL =		$(PREFIX)/node_modules/.ok
 
