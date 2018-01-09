@@ -10,11 +10,13 @@ var mod_jsprim = require('jsprim');
 var mod_ufds = require('ufds');
 var mod_sdc = require('sdc-clients');
 var mod_urclient = require('urclient');
+var mod_forkexec = require('forkexec');
 
 var lib_triton_access = require('../lib/triton_access');
 var lib_data_access = require('../lib/data_access');
 var lib_http_server = require('../lib/http_server');
 var lib_executor = require('../lib/executor');
+var lib_locks = require('../lib/locks');
 
 
 var VE = mod_verror.VError;
@@ -397,6 +399,37 @@ load_remote_sdc_applications(ctx, done)
 	});
 }
 
+function
+acquire_global_lock(ctx, done)
+{
+	ctx.ctx_lock = new lib_locks.Locks(ctx);
+
+	ctx.ctx_log.debug('fetching output of "zonename"');
+	mod_forkexec.forkExecWait({ argv: [ '/usr/bin/zonename' ],
+	    includeStderr: true }, function (err, info) {
+		if (err) {
+			done(new VE(err, 'could not get zonename'));
+			return;
+		}
+
+		var zonename = info.stdout.trim();
+		var owner = 'zone:' + zonename;
+		ctx.ctx_log.info({ owner_name: owner }, 'taking global lock');
+
+		ctx.ctx_lock.lock('global', owner, function (err, lock) {
+			if (err) {
+				done(new VE(err, 'could not take global lock'));
+				return;
+			}
+
+			ctx.ctx_log.info({ lock: lock },
+			    'global lock acquired');
+
+			done();
+		});
+	});
+}
+
 
 (function
 main()
@@ -474,6 +507,13 @@ main()
 		 * Our state is tracked in the administrative Moray shard.
 		 */
 		lib_data_access.create_moray_client,
+
+		/*
+		 * Only one instance of the reshard server may be running.
+		 * Before we start the Executor, we must acquire an exclusive
+		 * lock.
+		 */
+		acquire_global_lock,
 
 		lib_http_server.create_http_server,
 
