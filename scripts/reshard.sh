@@ -26,12 +26,29 @@ plan)
 		fi
 	fi
 	;;
+
+status|phases)
+	cmd=$1
+	shift
+
+	exec "$cmd" "$@"
+	;;
+
 esac
 
 cat - >&2 <<'EOF'
 ERROR: usage:
 
-    reshard plan PLAN_UUID [unhold|archive|pause|resume]
+    reshard plan
+
+        List all plans.
+
+    reshard plan PLAN_UUID
+
+        Fetch JSON object describing this plan.
+        NOTE: This object does not currently have a stable format.
+
+    reshard plan PLAN_UUID [unhold | archive | pause | resume]
 
         Clear an error (unhold), mark a completed plan for
         archival (archive), or pause/resume a running plan.
@@ -40,13 +57,13 @@ ERROR: usage:
 
         List tuning properties, or set a tuning property.
 
-    reshard plan PLAN_UUID
+    reshard status [-r]
 
-        Fetch JSON object describing this plan.
+        Display status for active plans.  Use "-r" for continuous redraw mode.
 
-    reshard plan
+    reshard phases
 
-        List all plans.
+        List all current reshard plan phase names.
 
 EOF
 exit 1
