@@ -14,11 +14,5 @@ if (process.argv.length !== 3 || !lib_common.is_uuid(process.argv[2])) {
 }
 
 lib_http_client.http_post('127.0.0.1', 80,
-    '/plan/' + process.argv[2] + '/archive', function (err, res) {
-	if (err) {
-		console.error('ERROR: %s', VE.fullStack(err));
-		process.exit(1);
-	}
-
-	console.log('result: %s', JSON.stringify(res, false, 4));
-});
+    '/plan/' + process.argv[2] + '/archive', null,
+    lib_http_client.cmd_print_result);
