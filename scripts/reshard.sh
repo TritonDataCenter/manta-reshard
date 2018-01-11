@@ -57,9 +57,13 @@ ERROR: usage:
 
         List tuning properties, or set a tuning property.
 
-    reshard status [-r]
+    reshard status [-r] [-x] [-U] [PLAN_UUID ...]
 
         Display status for active plans.  Use "-r" for continuous redraw mode.
+        To filter by plan UUID, provide either a full PLAN_UUID or a regular
+        expression.  To show only plans which are on hold or retrying due
+        to an error condition, use "-x".  To force the use of UTF-8 drawing
+        characters, use "-U".
 
     reshard phases
 
