@@ -53,6 +53,13 @@ ERROR: usage:
         Clear an error (unhold), mark a completed plan for
         archival (archive), or pause/resume a running plan.
 
+    reshard plan PLAN_UUID pause [ PHASE_NAME | none ]
+
+        Set a deferred pause action.  The plan will pause automatically
+        when it reaches the named phase, but before performing any
+        actions for that phase.  To clear a deferred pause action,
+        specify "none" instead of a phase name.
+
     reshard plan PLAN_UUID tune [TUNING_NAME [TUNING_VALUE]]
 
         List tuning properties, or set a tuning property.
