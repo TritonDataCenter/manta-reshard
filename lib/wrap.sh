@@ -10,4 +10,9 @@ NAME=$(basename $0)
 NODE="$DIR/node/bin/node"
 JS_FILE="$DIR/cmd/$NAME.js"
 
-exec "$NODE" "$JS_FILE" "$@"
+EXTRA=()
+if [[ $NAME == server ]]; then
+	EXTRA+=( '--abort-on-uncaught-exception' )
+fi
+
+exec "$NODE" "${EXTRA[@]}" "$JS_FILE" "$@"
