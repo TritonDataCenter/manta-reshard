@@ -60,7 +60,21 @@ print_status(callback)
 			return;
 		}
 
-		var k = Object.keys(res.plans).sort();
+		var k = Object.keys(res.plans).sort(function (ka, kb) {
+			var pa = res.plans[ka];
+			var pb = res.plans[kb];
+
+			if (pa.shard !== pb.shard) {
+				var na = parseInt(pa.shard, 10);
+				var nb = parseInt(pb.shard, 10);
+
+				if (!isNaN(na) && !isNaN(nb)) {
+					return (na - nb);
+				}
+			}
+
+			return (ka > kb ? 1 : ka < kb ? -1 : 0);
+		});
 
 		for (var i = 0; i < k.length; i++) {
 			var p = res.plans[k[i]];
