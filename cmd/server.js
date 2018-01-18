@@ -320,6 +320,41 @@ create_remote_vmapi_clients(ctx, done)
 function
 create_remote_ur_clients(ctx, done)
 {
+	/*
+	 * Discovery through Ur is relatively expensive, particularly in large
+	 * data centres.  Keep a cache of all of the servers we have seen, and
+	 * the time stamp at which we last saw them.
+	 */
+	ctx.ctx_ur_disco_cache = {};
+	ctx.ctx_ur_disco_cache_monitor = setInterval(function () {
+		var expire = [];
+		var hits = 0;
+
+		mod_jsprim.forEachKey(ctx.ctx_ur_disco_cache,
+		    function (uuid, udc) {
+			var age_hrt = process.hrtime(udc.udc_last_seen);
+			var age_ms = mod_jsprim.hrtimeMillisec(age_hrt);
+
+			/*
+			 * Don't hold onto entries for too long.  If a machine
+			 * panics or becomes unavailable, being absent from
+			 * the cache (and subsequent discoveries) is a much
+			 * crisper failer than waiting for an execution timeout.
+			 */
+			if (age_ms > 300 * 1000) {
+				expire.push(uuid);
+				hits += udc.udc_used;
+			}
+		});
+
+		ctx.ctx_log.debug('expiring %d ur cache entries (%d hits)',
+		    expire.length, hits);
+
+		expire.forEach(function (uuid) {
+			delete ctx.ctx_ur_disco_cache[uuid];
+		});
+	}, 60 * 1000);
+
 	mod_vasync.forEachPipeline({ inputs: Object.keys(ctx.ctx_dcs),
 	    func: function (n, next) {
 		var dc = ctx.ctx_dcs[n];
