@@ -1,3 +1,12 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+/*
+ * Copyright (c) 2018, Joyent, Inc.
+ */
 
 
 var mod_verror = require('verror');
@@ -9,10 +18,12 @@ var lib_http_client = require('../lib/http_client');
 
 var VE = mod_verror.VError;
 
+
 var PLAN_MATCH_LIST = null;
 var ONLY_ERRORS = false;
 var REDRAW = false;
 var FORCE_UTF8 = false;
+
 
 function
 include_plan(plan_uuid)
@@ -107,6 +118,7 @@ redraw_callback(err)
 	}
 	setTimeout(print_status, 500, redraw_callback);
 }
+
 
 var option;
 var parser = new mod_getopt.BasicParser('rxU', process.argv);

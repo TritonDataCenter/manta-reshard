@@ -1,16 +1,17 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+/*
+ * Copyright (c) 2018, Joyent, Inc.
+ */
 
 
-var mod_net = require('net');
-var mod_http = require('http');
-
-var mod_assert = require('assert-plus');
 var mod_verror = require('verror');
-var mod_vasync = require('vasync');
-var mod_jsprim = require('jsprim');
 var mod_extsprintf = require('extsprintf');
 
-var lib_common = require('../lib/common');
-var lib_status = require('../lib/status');
 var lib_http_client = require('../lib/http_client');
 
 var VE = mod_verror.VError;

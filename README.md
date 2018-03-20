@@ -5,7 +5,7 @@
 -->
 
 <!--
-    Copyright (c) 2017, Joyent, Inc.
+    Copyright (c) 2018, Joyent, Inc.
 -->
 
 # Manta Resharding System
@@ -17,16 +17,3 @@ guidelines, issues, and general documentation, visit the main
 This is the resharding system for Manta.  It comprises a service and a set of
 client tools for breaking up Moray shards within the Manta indexing tier to
 increase the performance and storage capacity of the system.
-
-## Before pushing changes
-
-- Your code should be `make prepush` clean.  That includes both `make check` and
-  `make test` (the test suite).
-- Assess the test impact of your changes -- make sure you've run all manual
-  tests you can think of, and automated all of the ones that can reasonably be
-  automated.
-- Assess any impact on fresh install / deployment and make sure you've tested
-  that if necessary.
-- Assess any impact on upgrade, including flag days for developers or existing
-  deployments.
-- Code review (via Gerrit) is required.

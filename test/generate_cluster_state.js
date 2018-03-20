@@ -1,13 +1,20 @@
 #!/usr/bin/env node
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 
-var mod_fs = require('fs');
+/*
+ * Copyright (c) 2018, Joyent, Inc.
+ */
+
+
 var mod_util = require('util');
 
 var mod_verror = require('verror');
 
 var lib_manatee_adm = require('../lib/manatee_adm');
-
-
 
 
 var result = lib_manatee_adm.generate_cluster_state({

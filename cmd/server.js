@@ -1,3 +1,13 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+/*
+ * Copyright (c) 2018, Joyent, Inc.
+ */
+
 
 var mod_fs = require('fs');
 var mod_path = require('path');
@@ -18,8 +28,8 @@ var lib_http_server = require('../lib/http_server');
 var lib_executor = require('../lib/executor');
 var lib_locks = require('../lib/locks');
 
-
 var VE = mod_verror.VError;
+
 
 function
 retry(func, ctx, done, nsecs)
