@@ -28,7 +28,7 @@ CLEAN_FILES +=			$(PROTO)
 RELEASE_TARBALL =		$(NAME)-pkg-$(STAMP).tar.gz
 
 BASE_IMAGE_UUID = 18b094b0-eb01-11e5-80c1-175dac7ddf02
-BUILDIMAGE_NAME = manta-reshard
+BUILDIMAGE_NAME = mantav1-reshard
 BUILDIMAGE_DESC	= Manta Resharding System
 BUILDIMAGE_PKGSRC = coreutils-8.23nb2
 AGENTS		= amon config registrar
