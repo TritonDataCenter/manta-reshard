@@ -5,7 +5,7 @@
 -->
 
 <!--
-    Copyright (c) 2018, Joyent, Inc.
+    Copyright 2019 Joyent, Inc.
 -->
 
 # Manta Resharding System
@@ -17,3 +17,15 @@ guidelines, issues, and general documentation, visit the main
 This is the resharding system for Manta.  It comprises a service and a set of
 client tools for breaking up Moray shards within the Manta indexing tier to
 increase the performance and storage capacity of the system.
+
+## Active Branches
+
+There are currently two active branches of this repository, for the two
+active major versions of Manta. See the [mantav2 overview
+document](https://github.com/joyent/manta/blob/master/docs/mantav2.md) for
+details on major Manta versions.
+
+- [`master`](../../tree/master/) - For development of mantav2, the latest
+  version of Manta.
+- [`mantav1`](../../tree/mantav1/) - For development of mantav1, the long
+  term support maintenance version of Manta.
