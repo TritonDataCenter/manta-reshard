@@ -23,7 +23,7 @@ increase the performance and storage capacity of the system.
 
 There are currently two active branches of this repository, for the two
 active major versions of Manta. See the [mantav2 overview
-document](https://github.com/jTritonDataCenter/manta/blob/master/docs/mantav2.md)
+document](https://github.com/TritonDataCenter/manta/blob/master/docs/mantav2.md)
 for details on major Manta versions.
 
 - [`master`](../../tree/master/) - For development of mantav2, the latest
