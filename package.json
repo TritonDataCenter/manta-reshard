@@ -15,7 +15,6 @@
     "extsprintf": "^1.3.0",
     "forkexec": "^1.1.0",
     "jsprim": "^2.0.0",
-    "monowrap": "^1.0.4",
     "moray": "^3.3.0",
     "pg": "^7.4.0",
     "posix-getopt": "^1.2.0",
